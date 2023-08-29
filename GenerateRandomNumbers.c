@@ -15,21 +15,21 @@ void generate_random_array(float* array, int N1, int N2)
 
 int main(int argc, char *argv[])
 {
-    // 定义生成随机数组的参数
+    // Define the parameters for generating random arrays
     int array_dim1 = 2048, array_dim2 = 2048;
     float* random_array = (float*)malloc(array_dim1 * array_dim2 * sizeof(float));
 
-    // 调用函数生成随机数组
+    // Call the function to generate random arrays
     generate_random_array(random_array, array_dim1, array_dim2);
 
-    // 创建并打开.dat文件
+    // Create and open the .dat file
     FILE* file = fopen("random_array.dat", "wb");
     if (file == NULL) {
         perror("Failed to open file");
         return 1;
     }
     
-    // 将数组内容写入文件
+    // Write the array content to the file
     for (int i = 0; i < array_dim1; i++) {
         for (int j = 0; j < array_dim2; j++) {
             fprintf(file, "%f ", random_array[i * array_dim2 + j]);
@@ -37,11 +37,10 @@ int main(int argc, char *argv[])
         fprintf(file, "\n");
     }
 
-    // 关闭文件
+    // Close the file
     fclose(file);
     
-    // 释放数组内存
+    // Release the memory of the array
     free(random_array);
-
     return 0;
 }
