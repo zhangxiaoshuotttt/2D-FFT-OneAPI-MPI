@@ -71,7 +71,7 @@ void My_save_data_file_2d(const char* filename, MKL_Complex8* array, int m, int 
         return;
     }
 
-    // 将实部和虚部分别写入到两个不同的文件中
+    // Write the real part and imaginary part into two separate files
     for (long i = 0; i < m * n; i++) {
         float real_part = fabsf(array[i].real);
         float imaginary_part = fabsf(array[i].imag);
@@ -259,59 +259,60 @@ int main(int argc, char *argv[])
     *********************************************************************************/
     
     Status = DftiCreateDescriptorDM(MPI_COMM_WORLD,&desc,PREC,DFTI_REAL,2,lengths);
-    /*
+
+    // I use code like this for testing and verifying the functionality, 
+    // so if you don’t need it, you can simply comment it out
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Create=%ld\n",(long)Status);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    
-    //printf("We have allocated memory for the descriotor \n");
-    */
+   
     /*******************************************************************************
      4. Get some values of configuration parameters to make sure paralell programe
         can run successfully
     ********************************************************************************/
     Status = DftiGetValueDM(desc,CDFT_LOCAL_SIZE,&size);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Get=%ld,size=%ld\n",(long)Status,(long)size);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     Status = DftiGetValueDM(desc,CDFT_LOCAL_NX,&nx);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Get=%ld,nx=%ld\n",(long)Status,(long)nx);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     Status = DftiGetValueDM(desc,CDFT_LOCAL_X_START,&start_x);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Get=%ld,start_x=%ld\n",(long)Status,(long)start_x);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     Status = DftiGetValueDM(desc,CDFT_LOCAL_OUT_NX,&nx_out);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Get=%ld,nx_out=%ld\n",(long)Status,(long)nx_out);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     Status = DftiGetValueDM(desc,CDFT_LOCAL_OUT_X_START,&start_x_out);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Get=%ld,start_x_out=%ld\n",(long)Status,(long)start_x_out);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     /*Here we define the local parameter for paralell programes*/
     mkl_input_real=(float*)mkl_malloc(size*sizeof(float), 64);
     mkl_output_cmplx=(MKL_Complex8*)mkl_malloc(size*sizeof(mkl_float_complex), 64);
@@ -328,25 +329,25 @@ int main(int argc, char *argv[])
      5. Set values of configuration parameters
     ***********************************************************************************/
     Status = DftiSetValueDM(desc,CDFT_WORKSPACE,mkl_output_cmplx);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Set=%ld,pointer=%p\n",(long)Status,mkl_output_cmplx);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
 
     /***************************************************************************************************
      6. Perform all initialization for the actual FFT computation
     ***************************************************************************************************/
     Status = DftiCommitDescriptorDM(desc);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Commit=%ld\n",(long)Status);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     /***************************************************************************************************
      7. Create arrays for local parts of input and output data
     ***************************************************************************************************/
@@ -354,36 +355,36 @@ int main(int argc, char *argv[])
     ElementSize=sizeof(float);
     float start_time = MPI_Wtime();
     Status = MKL_ScatterData(MPI_COMM_WORLD,RootRank,ElementSize,2,lengths,total_in,nx,start_x,mkl_input_real);   
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Scatter=%ld\n",(long)Status);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     /**************************************************************************************************
      8. Compute the transform by calling DftiComputeForwardDM
     ***************************************************************************************************/
     
     Status = DftiComputeForwardDM(desc,mkl_input_real,mkl_output_cmplx);
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("ComputeForward=%ld\n",(long)Status);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-    */
+    
     /************************************************************************************************
      9. Gather data among processors
     *************************************************************************************************/
     Status = MKL_GatherData(MPI_COMM_WORLD,RootRank,ElementSize,2,lengths,total_exp,nx,start_x,mkl_output_cmplx);    
-    /*
+    
     if (ADVANCED_DATA_PRINT && (MPI_Rank == 0))
         printf("Gather=%ld\n",(long)Status);
     if (!DftiErrorClass(Status, DFTI_NO_ERROR)) local_failure++;
     MPI_Allreduce(&local_failure, &global_failure, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (global_failure != 0) goto FREE_DESCRIPTOR;
-     */
+     
      /****************************output data*******************************************************/
     float end_time = MPI_Wtime();
     float runtime = end_time - start_time;
