@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# 编译 GenerateRandomNumbers.c
+# Compile GenerateRandomNumbers.c
 icx -o GenerateRandomNumbers GenerateRandomNumbers.c -lmkl_rt
 
-# 运行 GenerateRandomNumbers 以生成随机数组
+# Run GenerateRandomNumbers to generate random arrays
 ./GenerateRandomNumbers
 
-# 编译 FFTW3_FFT.c
+# Compile FFTW3_FFT.c
 icx -o FFTW3_FFT FFTW3_FFT.c -lmkl_rt
 
-# 进行 FFTW3_FFT random_array.dat 运行10次，记录运行时间
+# Perform FFTW3_FFT on random_array.dat for 10 runs and record the execution time
 times=10
 
 FFTWtotal_runtime=0
@@ -20,18 +20,17 @@ do
 
   if [ -n "$runtime" ]; then
     FFTWtotal_runtime=$(awk "BEGIN{print $FFTWtotal_runtime + $runtime}")
-    echo "FFTW3_FFT 第 $i 次运行时间为 $runtime 秒"
+    echo "FFTW3_FFT running time for the $i-th run is $runtime seconds"
   else
-    echo "FFTW3_FFT 第 $i 次未能提取到运行时间"
+    echo "Failed to extract the runtime for the $i-th run of FFTW3_FFT"
   fi
 done
+echo "The total runtime of all FFTW3_FFT runs is $FFTWtotal_runtime seconds"
 
-echo "FFTW3_FFT 所有运行时间的总和为 $FFTWtotal_runtime 秒"
-
-# 编译 OnlyMpiFFT.c
+# Compile OnlyMpiFFT.c
 mpiicc OnlyMpiFFT.c -o OnlyMpiFFT -L${MKLROOT}/lib/intel64 -lmkl_cdft_core -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_ilp64 -liomp5 -lpthread -lm -ldl
 
-# 进行 mpirun -np 12 OnlyMpiFFT random_array.dat -DMKL_ILP64 -I"${MKLROOT}/include" 运行10次，记录运行时间
+# Execute 'mpirun -np 12 OnlyMpiFFT random_array.dat -DMKL_ILP64 -I”${MKLROOT}/include"’ 10 times and record the execution time.
 MPIruntimes=()
 for ((i=1; i<=times; i++))
 do
@@ -40,9 +39,9 @@ do
 
   if [ -n "$runtime" ]; then
     MPIruntimes+=($runtime)
-    echo "MPI 第 $i 次运行时间为 $runtime 秒"
+    echo "MPI runtime for the $i-th run is $runtime seconds"
   else
-    echo "MPI 第 $i 次未能提取到运行时间"
+    echo "Unable to retrieve the runtime for the $i-th MPI run"
   fi
 done
 
@@ -52,10 +51,10 @@ do
     OnlyMpiFFT_total_time=$(awk "BEGIN{print $OnlyMpiFFT_total_time + $runtime}")
 done
 
-echo "MPI 所有运行时间的总和为 $OnlyMpiFFT_total_time 秒"
+echo "The total runtime of all MPI runs is $OnlyMpiFFT_total_time seconds"
 
-# 编译 CompareFFTResults.c
+# Compile CompareFFTResults.c
 icx -o CompareFFTResults CompareFFTResults.c -lmkl_rt
 
-# 运行 CompareFFTResults
+# Perform CompareFFTResults
 ./CompareFFTResults
